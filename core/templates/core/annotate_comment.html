@@ -1,0 +1,33 @@
+{% extends 'core/base_admin.html' %}
+{% block title %}Détails du Commentaire{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Détails du Commentaire</h2>
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Commentaire #{{ comment.pk }}</h5>
+      <p class="card-text"><strong>Contenu :</strong> {{ comment.contenu }}</p>
+      <p class="card-text"><small class="text-muted">Publié le {{ comment.date }}</small></p>
+      <p class="card-text"><strong>Note :</strong> {{ comment.note_global }}</p>
+      <p class="card-text"><strong>Médecin :</strong> {{ comment.medecin }}</p>
+    </div>
+  </div>
+  
+  <h3>Annotations</h3>
+  {% if annotations %}
+    <ul class="list-group">
+      {% for annotation in annotations %}
+        <li class="list-group-item">
+          <strong>Aspect :</strong> {{ annotation.aspect.nom_aspect }}<br>
+          <strong>Polarité :</strong> {{ annotation.polarite }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Aucune annotation pour ce commentaire.</p>
+  {% endif %}
+  
+  <a href="{% url 'comment_list_admin' %}" class="btn btn-secondary mt-4">Retour à la liste</a>
+</div>
+{% endblock %}

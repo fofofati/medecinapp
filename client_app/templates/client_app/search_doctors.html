@@ -1,0 +1,70 @@
+{% extends 'client_app/base_public.html' %}
+{% load static %}
+
+{% block title %}Recherche Médecins{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="text-center mb-4">Trouvez votre Médecin</h2>
+  
+  <form method="GET" action="{% url 'search_doctors' %}" class="row g-3 mb-4">
+    <!-- Select pour la spécialité -->
+    <div class="col-md-4">
+      <select name="specialite_query" class="form-select">
+        <option value="">Toutes les spécialités</option>
+        {% for sp in all_specialties %}
+          <option value="{{ sp }}"
+            {% if sp == specialite_query %}
+              selected
+            {% endif %}
+          >{{ sp }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <!-- Select pour l'aspect -->
+    <div class="col-md-4">
+      <select name="aspect_query" class="form-select">
+        <option value="">Tous les aspects</option>
+        {% for asp in all_aspects %}
+          <option value="{{ asp }}"
+            {% if asp == aspect_query %}
+              selected
+            {% endif %}
+          >{{ asp }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+    </div>
+  </form>
+
+  <!-- Affichage des médecins -->
+  <div class="row">
+    {% for doctor in doctors %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <img 
+          src="{% static 'images/doctor-placeholder.jpg' %}" 
+          class="card-img-top" 
+          alt="Photo de Dr {{ doctor.nom }}"
+        >
+        <div class="card-body">
+          <h5 class="card-title">Dr {{ doctor.prenom }} {{ doctor.nom }}</h5>
+          <p class="card-text">
+            <strong>Spécialité :</strong> {{ doctor.specialite }}<br>
+            <strong>Email :</strong> {{ doctor.email }}<br>
+            <strong>Téléphone :</strong> {{ doctor.telephone }}
+          </p>
+          <a href="#" class="btn btn-success">Prendre Rendez-vous</a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <p class="text-center">Aucun médecin trouvé.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

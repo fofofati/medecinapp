@@ -1,0 +1,122 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Select a Doctor to View Comments{% endblock %}
+
+{% block content %}
+<!-- Styles et animations -->
+<style>
+  /* Animation fade-in pour le conteneur principal */
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Table row hover + curseur pointer + transition */
+  .table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+    cursor: pointer; /* Montre un curseur de clic */
+  }
+
+  /* Transition légère sur les boutons */
+  .btn {
+    transition: transform 0.2s ease;
+  }
+  .btn:hover {
+    transform: scale(1.05);
+  }
+
+  /* Masque la surbrillance du lien par défaut */
+  .clickable-row a {
+    text-decoration: none;
+    color: inherit;
+  }
+</style>
+
+<div class="fade-in">
+  <h2 class="mb-4 text-center">Select a Doctor to View Comments</h2>
+
+  <!-- Barre de recherche centrée -->
+  <div class="d-flex justify-content-center mb-4">
+    <form method="GET" class="w-50">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input 
+          type="text" 
+          name="search" 
+          value="{{ search_query }}" 
+          class="form-control" 
+          placeholder="Search doctor by name..."
+        >
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Table des médecins -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Spécialité</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doctor in doctors %}
+        <!-- Ajout de "clickable-row" et data-href -->
+        <tr class="clickable-row" data-href="{% url 'doctor_comments' doctor.pk %}">
+          <td>{{ doctor.nom }}</td>
+          <td>{{ doctor.prenom }}</td>
+          <td>{{ doctor.specialite }}</td>
+          <td>{{ doctor.email }}</td>
+          <td>{{ doctor.telephone }}</td>
+          <td class="text-center">
+            <!-- Bouton "View Comments" avec icône -->
+            <a href="{% url 'doctor_comments' doctor.pk %}" class="btn btn-info btn-sm">
+              <i class="bi bi-chat-left-text"></i> View Comments
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">
+            <div class="py-4">
+              <i class="bi bi-info-circle fs-3 text-secondary"></i>
+              <p class="mb-0">No doctors found.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Script pour rendre les lignes cliquables -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.clickable-row');
+    rows.forEach(row => {
+      row.addEventListener('click', function(e) {
+        // Vérifie qu'on ne clique pas directement sur un bouton ou un lien
+        if (!e.target.closest('a, button')) {
+          const href = this.getAttribute('data-href');
+          if (href) {
+            window.location = href;
+          }
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

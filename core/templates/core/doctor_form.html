@@ -1,0 +1,98 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Edit Doctor{% endblock %}
+
+{% block content %}
+<style>
+  /* Animation fade-in */
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Carte arrondie + overflow caché pour le dégradé */
+  .card {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  /* En-tête de la carte : dégradé (teal -> bleu) */
+  .card-header {
+    background: linear-gradient(45deg, #20c997, #0d6efd);
+    color: #fff;
+  }
+
+  /* Bouton Save en teal */
+  .btn-save {
+    background-color: #20c997; 
+    border-color: #20c997;
+    color: #fff;
+    transition: transform 0.2s ease;
+  }
+  .btn-save:hover {
+    transform: scale(1.05);
+    background-color: #17a2b8;
+  }
+
+  /* Bouton Cancel */
+  .btn-cancel:hover {
+    transform: scale(1.05);
+  }
+
+  /* Pour un label en gras */
+  .form-label {
+    font-weight: 600;
+  }
+</style>
+
+<div class="fade-in">
+  <div class="card shadow mb-4">
+    <div class="card-header">
+      <h2 class="mb-0">Edit Doctor</h2>
+    </div>
+    <div class="card-body">
+      <!-- Formulaire -->
+      <form method="POST">
+        {% csrf_token %}
+
+        <!-- Nom -->
+        <div class="mb-3">
+          <label for="id_nom" class="form-label">Nom</label>
+          {{ form.nom }}
+        </div>
+        <!-- Prénom -->
+        <div class="mb-3">
+          <label for="id_prenom" class="form-label">Prénom</label>
+          {{ form.prenom }}
+        </div>
+        <!-- Spécialité -->
+        <div class="mb-3">
+          <label for="id_specialite" class="form-label">Spécialité</label>
+          {{ form.specialite }}
+        </div>
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="id_email" class="form-label">Email</label>
+          {{ form.email }}
+        </div>
+        <!-- Téléphone -->
+        <div class="mb-4">
+          <label for="id_telephone" class="form-label">Téléphone</label>
+          {{ form.telephone }}
+        </div>
+
+        <!-- Boutons d'action -->
+        <button type="submit" class="btn btn-save">
+          <i class="bi bi-save"></i> Save
+        </button>
+        <a href="{% url 'doctor_list' %}" class="btn btn-secondary btn-cancel ms-2">
+          <i class="bi bi-arrow-left"></i> Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

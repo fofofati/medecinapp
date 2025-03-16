@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion - Mon Super Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <link 
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  >
+  <!-- Optionnel : Bootstrap Icons (pour des icônes si besoin) -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+  >
+
+  <style>
+    /* Corps de page : image de fond + overlay sombre */
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("{% static 'images/monimage.png' %}") no-repeat center center / cover;
+      position: relative;
+      font-family: Arial, sans-serif;
+    }
+    /* Overlay sombre via pseudo-élément */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0; /* top, right, bottom, left = 0 */
+      background: rgba(0, 0, 0, 0.5); /* overlay sombre */
+      z-index: 0; /* Derrière le contenu */
+    }
+
+    /* Conteneur de la carte "glassmorphism" */
+    .login-container {
+      position: relative;
+      z-index: 1; /* Au-dessus de l'overlay */
+      background: rgba(255, 255, 255, 0.2); /* semi-transparence */
+      backdrop-filter: blur(10px);          /* effet flou */
+      -webkit-backdrop-filter: blur(10px); /* compatibilité Safari/Chrome */
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 15px;
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Logo centré */
+    .login-container img {
+      display: block;
+      margin: 0 auto 15px;
+      width: 80px;
+    }
+
+    /* Titre */
+    .login-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #2575fc;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Champ de formulaire */
+    .form-control {
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+    .form-control:focus {
+      box-shadow: none;
+      border-color: #2575fc;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Bouton */
+    .btn-primary {
+      background-color: #2575fc;
+      border-color: #2575fc;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    .btn-primary:hover {
+      background-color: #1a5bb8;
+      border-color: #1a5bb8;
+    }
+
+    /* Message d'erreur (alert) */
+    .alert-danger {
+      background: rgba(255, 0, 0, 0.1);
+      color: #b00;
+      border: 1px solid #f88;
+    }
+
+    /* Footer */
+    .footer-text {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #eee;
+    }
+
+    /* Adaptation responsive */
+    @media (max-width: 576px) {
+      .login-container {
+        margin: 0 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <!-- Logo -->
+    <img src="{% static 'images/logo.png' %}" alt="Logo Admin">
+
+    <!-- Titre -->
+    <div class="login-title">BIENVENUE</div>
+
+    <!-- Affichage du message d'erreur s'il existe -->
+    {% if error_message %}
+      <div class="alert alert-danger text-center" role="alert">
+        {{ error_message }}
+      </div>
+    {% endif %}
+
+    <!-- Formulaire de connexion -->
+    <form method="POST" action="">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="id_username" class="form-label">
+          <i class="bi bi-person-fill me-1"></i> Nom d'admin
+        </label>
+        <input 
+          type="text" 
+          name="username" 
+          id="id_username" 
+          class="form-control" 
+          placeholder="Votre nom d'utilisateur"
+          required
+        >
+      </div>
+      <div class="mb-3">
+        <label for="id_password" class="form-label">
+          <i class="bi bi-lock-fill me-1"></i> Mot de passe
+        </label>
+        <input 
+          type="password" 
+          name="password" 
+          id="id_password" 
+          class="form-control" 
+          placeholder="Votre mot de passe"
+          required
+        >
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary">
+          Se connecter
+        </button>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="footer-text">© 2025 Mon Super Admin. Tous droits réservés.</div>
+  </div>
+
+  <!-- Bootstrap Bundle JS -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
+</body>
+</html>

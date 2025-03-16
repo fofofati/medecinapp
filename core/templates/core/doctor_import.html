@@ -1,0 +1,12 @@
+{% extends 'core/base_admin.html' %}
+{% block title %}Import Doctors{% endblock %}
+
+{% block content %}
+<h2>Import Doctors</h2>
+<p>Chargez un fichier CSV ou Excel (.xlsx) contenant les colonnes : nom, prenom, specialite, email, telephone.</p>
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Importer</button>
+</form>
+{% endblock %}

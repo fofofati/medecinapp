@@ -1,0 +1,46 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Add Comment for Dr {{ doctor.prenom }} {{ doctor.nom }}{% endblock %}
+
+{% block content %}
+<div class="container my-4 fade-in">
+  <!-- Titre centré -->
+  <h2 class="mb-4 text-center">Add Comment for Dr {{ doctor.prenom }} {{ doctor.nom }}</h2>
+
+  <!-- Carte Bootstrap pour encadrer le formulaire -->
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      New Comment
+    </div>
+    <div class="card-body">
+      <!-- Formulaire -->
+      <form method="POST" novalidate>
+        {% csrf_token %}
+        <!-- Affichage du formulaire (label + champ) -->
+        {{ form.as_p }}
+
+        <!-- Bouton Save -->
+        <button type="submit" class="btn btn-success">
+          <i class="bi bi-save"></i> Save
+        </button>
+
+        <!-- Bouton Cancel -->
+        <a href="{% url 'doctor_comments' doctor.pk %}" class="btn btn-secondary ms-2">
+          Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Styles et animation fade-in -->
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}

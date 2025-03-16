@@ -1,0 +1,28 @@
+{% extends 'core/base_admin.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Welcome to Admin Dashboard</h2>
+
+<div class="row">
+  <!-- Carte pour le nombre total de docteurs -->
+  <div class="col-md-4 mb-3">
+    <div class="card text-center">
+      <div class="card-header bg-primary text-white">Total Doctors</div>
+      <div class="card-body">
+        <h3>{{ total_doctors }}</h3>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Carte pour le nombre total de commentaires -->
+  <div class="col-md-4 mb-3">
+    <div class="card text-center">
+      <div class="card-header bg-success text-white">Total Comments</div>
+      <div class="card-body">
+        <h3>{{ total_comments }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

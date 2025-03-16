@@ -1,0 +1,24 @@
+{% extends 'core/base_admin.html' %}
+{% block title %}Public Doctors{% endblock %}
+
+{% block content %}
+<h2>Public Doctors</h2>
+<div class="row">
+  {% for doctor in doctors %}
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <img src="{% static 'images/doctor-placeholder.jpg' %}" class="card-img-top" alt="Photo de Dr {{ doctor.nom }}">
+      <div class="card-body">
+        <h5 class="card-title">Dr {{ doctor.prenom }} {{ doctor.nom }}</h5>
+        <p class="card-text">
+          <strong>Spécialité :</strong> {{ doctor.specialite }}<br>
+          <strong>Email :</strong> {{ doctor.email }}<br>
+          <strong>Téléphone :</strong> {{ doctor.telephone }}
+        </p>
+        <a href="#" class="btn btn-success">Prendre Rendez-vous</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

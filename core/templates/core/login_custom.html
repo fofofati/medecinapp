@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion - Mon Super Admin</title>
+
+  <!-- Bootstrap CSS via CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+  <!-- Google Fonts (exemple : Poppins) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      /* Image de fond */
+      background: url("{% static 'images/monimage.png' %}") no-repeat center center;
+      background-size: cover;
+      min-height: 100vh;
+      /* overlay semi-transparent */
+      position: relative;
+      font-family: 'Poppins', sans-serif;
+    }
+    /* Overlay */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3); /* fonce légèrement l'image */
+    }
+
+    /* Conteneur du formulaire */
+    .login-container {
+      position: relative; /* pour passer au-dessus de l'overlay */
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+      /* centrage en flex */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* animation d'apparition */
+      animation: fadeIn 0.7s ease forwards;
+    }
+
+    /* Centrer la .login-container dans la page */
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 2; /* au-dessus de l'overlay */
+    }
+
+    .login-container img {
+      display: block;
+      margin: 0 auto 15px;
+      width: 80px; /* Ajuste la taille du logo */
+    }
+
+    .login-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #2575fc;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-control:focus {
+      box-shadow: none;
+      border-color: #2575fc;
+    }
+
+    .btn-primary {
+      background-color: #2575fc;
+      border-color: #2575fc;
+      font-weight: bold;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    .btn-primary:hover {
+      background-color: #1a5bb8;
+      border-color: #1a5bb8;
+    }
+
+    .footer-text {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* Animation fadeIn */
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-container">
+      <!-- Logo -->
+      <img src="{% static 'images/logo.png' %}" alt="Logo Admin">
+
+      <!-- Titre de la page -->
+      <div class="login-title">BIENVENUE</div>
+
+      <!-- Affichage des messages (erreurs, succès) -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Formulaire de connexion -->
+      <form method="POST" action="">
+        {% csrf_token %}
+        <div class="mb-3 text-start">
+          <label for="id_username" class="form-label">Nom d'admin</label>
+          <input type="text" name="username" id="id_username" class="form-control" placeholder="Entrez votre nom d'utilisateur" required>
+        </div>
+        <div class="mb-3 text-start">
+          <label for="id_password" class="form-label">Mot de passe</label>
+          <input type="password" name="password" id="id_password" class="form-control" placeholder="Entrez votre mot de passe" required>
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">Connexion</button>
+        </div>
+      </form>
+
+      <!-- Footer -->
+      <div class="footer-text">© 2025 Mon Super Admin. Tous droits réservés.</div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (incluant Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Import Comments{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Import Comments for Dr {{ doctor.prenom }} {{ doctor.nom }}</h2>
+  <p>Upload an Excel (.xlsx) or CSV file containing a column named "contenu".</p>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-upload"></i> Import Comments
+    </button>
+    <a href="{% url 'doctor_comments' doctor.pk %}" class="btn btn-secondary ms-2">
+      <i class="bi bi-arrow-left"></i> Cancel
+    </a>
+  </form>
+</div>
+{% endblock %}

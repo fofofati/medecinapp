@@ -1,0 +1,162 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Doctors List{% endblock %}
+
+{% block content %}
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .btn:hover {
+    transform: scale(1.05);
+  }
+</style>
+
+<div class="fade-in">
+  <!-- Affichage des messages (succès, etc.) -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button 
+          type="button" 
+          class="btn-close" 
+          data-bs-dismiss="alert" 
+          aria-label="Close"
+        ></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h2 class="mb-0">Doctors List</h2>
+      <div>
+        <a href="{% url 'doctor_import' %}" class="btn btn-outline-secondary me-2">
+          <i class="bi bi-upload"></i> Import Doctors
+        </a>
+        <a href="{% url 'doctor_create' %}" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i> Add Doctor
+        </a>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Barre de recherche (optionnel) -->
+      <form method="GET" class="row g-3 mb-3">
+        <div class="col-auto">
+          <div class="input-group">
+            <span class="input-group-text bg-white">
+              <i class="bi bi-search"></i>
+            </span>
+            <input 
+              type="text" 
+              name="search" 
+              value="{{ search_query }}" 
+              class="form-control" 
+              placeholder="Search doctor"
+            >
+          </div>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-info text-white">
+            Search
+          </button>
+        </div>
+      </form>
+
+      <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>Nom</th>
+              <th>Prénom</th>
+              <th>Spécialité</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for doctor in doctors %}
+            <tr>
+              <td>{{ doctor.nom }}</td>
+              <td>{{ doctor.prenom }}</td>
+              <td>{{ doctor.specialite }}</td>
+              <td>{{ doctor.email }}</td>
+              <td>{{ doctor.telephone }}</td>
+              <td class="text-center">
+                <a href="{% url 'doctor_edit' doctor.pk %}" class="btn btn-primary btn-sm me-1">
+                  <i class="bi bi-pencil-square"></i> Edit
+                </a>
+                <!-- Formulaire inline pour Delete -->
+                <form 
+                  method="POST" 
+                  action="{% url 'doctor_delete' doctor.pk %}"
+                  style="display: inline;"
+                  class="delete-form"
+                  data-doctor-name="{{ doctor.prenom }} {{ doctor.nom }}"
+                >
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm delete-btn">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </form>
+                <a href="{% url 'doctor_comments' doctor.pk %}" class="btn btn-info btn-sm ms-1">
+                  <i class="bi bi-chat-text"></i> Comments
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center">
+                <div class="py-4">
+                  <i class="bi bi-info-circle fs-3 text-secondary"></i>
+                  <p class="mb-0">No doctors found.</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();  // Empêche la soumission immédiate du formulaire
+
+        const form = btn.closest('form');
+        const doctorName = form.getAttribute('data-doctor-name');
+
+        // SweetAlert2 - popup stylé, sans GIF en fond
+        Swal.fire({
+          title: 'Confirm Deletion',
+          text: `Are you sure you want to delete Dr ${doctorName}?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',  // rouge
+          cancelButtonColor: '#3085d6', // bleu
+          confirmButtonText: 'Yes, delete!',
+          cancelButtonText: 'Cancel',
+          background: '#fff', // fond blanc
+          backdrop: `rgba(0,0,0,0.4)`, // voile semi-transparent
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}

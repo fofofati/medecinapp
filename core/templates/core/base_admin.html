@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Admin Dashboard{% endblock %}</title>
+  <!-- Bootstrap CSS -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  >
+  <!-- Bootstrap Icons (pour <i class="bi bi-...">) -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+  >
+
+  <!-- jQuery -->
+<script 
+src="https://code.jquery.com/jquery-3.6.0.min.js" 
+integrity="sha256-/xUj+3OJ+0Jvvd/0VVAlIJTgkHZ9JJ6qRRSNmD0OJXU=" 
+crossorigin="anonymous">
+</script>
+
+<!-- DataTables CSS et JS -->
+<link 
+rel="stylesheet" 
+href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<script 
+  src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js">
+</script>
+<link 
+rel="stylesheet" 
+href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+>
+<script 
+src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js">
+</script>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark mb-3">
+    <div class="container-fluid">
+      <!-- Lien vers la page "dashboard" -->
+      <a class="navbar-brand" href="{% url 'dashboard' %}">Admin Dashboard</a>
+      <ul class="navbar-nav ms-auto flex-row">
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'dashboard' %}">
+            <i class="bi bi-house"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'doctor_list' %}">
+            <i class="bi bi-person-badge"></i> Doctors
+          </a>
+        </li>
+        <li class="nav-item me-3">
+          <!-- Lien "Comments" pointe vers la vue "select_doctor_for_comments" -->
+          <a class="nav-link" href="{% url 'select_doctor_for_comments' %}">
+            <i class="bi bi-chat-left-text"></i> Comments
+          </a>
+        </li>
+        <li class="nav-item">
+          <!-- Formulaire de déconnexion -->
+          <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button 
+              type="submit" 
+              class="btn btn-link nav-link text-white" 
+              style="text-decoration: none;"
+            >
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap Bundle (incluant Popper) -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
+</body>
+</html>

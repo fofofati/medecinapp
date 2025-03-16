@@ -1,0 +1,62 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Analysis of Comment #{{ comment.pk }}{% endblock %}
+
+{% block content %}
+<div class="container my-4 fade-in">
+  <h2 class="mb-4 text-center">Analysis of Comment #{{ comment.pk }}</h2>
+  
+  <!-- Détails du commentaire -->
+  <div class="card shadow mb-4">
+    <div class="card-header bg-info text-white">
+      Comment Details
+    </div>
+    <div class="card-body">
+      <p><strong>Doctor:</strong> Dr {{ comment.medecin.prenom }} {{ comment.medecin.nom }}</p>
+      <p><strong>Date:</strong> {{ comment.date|date:"d/m/Y" }}</p>
+      <p><strong>Content:</strong> {{ comment.contenu }}</p>
+    </div>
+  </div>
+  
+  <!-- Tableau des aspects associés -->
+  <div class="card shadow">
+    <div class="card-header bg-dark text-white">
+      Associated Aspects
+    </div>
+    <div class="card-body">
+      {% if aspects_associes %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Aspect</th>
+                <th>Polarity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ab in aspects_associes %}
+              <tr>
+                <td>{{ ab.aspect.nom_aspect }}</td>
+                <td>{{ ab.polarite }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-center">No aspects associated with this comment.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <h2 class="mb-4">Are you sure you want to delete {{ doctor.nom }} {{ doctor.prenom }}?</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger me-2">Confirm Delete</button>
+    <a href="{% url 'doctor_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
