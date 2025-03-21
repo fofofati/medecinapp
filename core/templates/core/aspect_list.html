@@ -1,0 +1,52 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+
+{% block title %}Aspects List{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2>Aspects List</h2>
+  <a href="{% url 'aspect_create' %}" class="btn btn-primary mb-3">
+    Add Aspect
+  </a>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <table class="table table-bordered table-striped align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Nom de l'Aspect</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for aspect in aspects %}
+      <tr>
+        <td>{{ aspect.nom_aspect }}</td>
+        <td class="text-center">
+          <a href="{% url 'aspect_edit' aspect.pk %}" class="btn btn-sm btn-primary me-1">
+            Edit
+          </a>
+          <a href="{% url 'aspect_delete' aspect.pk %}" class="btn btn-sm btn-danger">
+            Delete
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="2" class="text-center">
+          No aspects found.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

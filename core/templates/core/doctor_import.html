@@ -1,12 +1,45 @@
 {% extends 'core/base_admin.html' %}
+{% load static %}
 {% block title %}Import Doctors{% endblock %}
 
 {% block content %}
-<h2>Import Doctors</h2>
-<p>Chargez un fichier CSV ou Excel (.xlsx) contenant les colonnes : nom, prenom, specialite, email, telephone.</p>
-<form method="POST" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Importer</button>
-</form>
+<div class="container my-5 fade-in">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h2 class="card-title mb-0">Import Doctors</h2>
+    </div>
+    <div class="card-body">
+      <p class="card-text">
+        Chargez un fichier CSV ou Excel (.xlsx) contenant les colonnes : <strong>nom</strong>, <strong>prenom</strong>, <strong>specialite</strong>, <strong>email</strong>, <strong>telephone</strong>.
+      </p>
+      <form method="POST" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        <div class="col-12">
+          {{ form.as_p }}
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-upload"></i> Importer
+          </button>
+        </div>
+        <div class="col-auto">
+          <a href="{% url 'doctor_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Annuler
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Styles pour l'animation -->
+<style>
+  .fade-in {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
 {% endblock %}

@@ -1,33 +1,134 @@
 {% extends 'core/base_admin.html' %}
-{% block title %}Détails du Commentaire{% endblock %}
+{% load static %}
+
+{% block title %}Annotate Comment #{{ comment.pk }}{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h2>Détails du Commentaire</h2>
-  <div class="card mb-4">
-    <div class="card-body">
-      <h5 class="card-title">Commentaire #{{ comment.pk }}</h5>
-      <p class="card-text"><strong>Contenu :</strong> {{ comment.contenu }}</p>
-      <p class="card-text"><small class="text-muted">Publié le {{ comment.date }}</small></p>
-      <p class="card-text"><strong>Note :</strong> {{ comment.note_global }}</p>
-      <p class="card-text"><strong>Médecin :</strong> {{ comment.medecin }}</p>
+<div class="container my-4">
+  <h2 class="mb-4">Annotate Comment #{{ comment.pk }}</h2>
+  <p><strong>Comment:</strong> {{ comment.contenu }}</p>
+  
+  <!-- Bouton pour ajouter un nouvel aspect -->
+  <div class="mb-3">
+    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addAspectModal">
+      <i class="bi bi-plus-circle"></i> Add New Aspect
+    </button>
+  </div>
+
+  <!-- Formulaire inline pour modifier les aspects existants via un formset -->
+  <form method="POST">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>Polarité</th>
+          <th>Supprimer</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for form in formset %}
+        <tr>
+          <td>{{ form.aspect }}</td>
+          <td>{{ form.polarite }}</td>
+          <td>
+            {% if form.instance.pk %}
+              {{ form.DELETE }}
+            {% else %}
+              <!-- pour les nouvelles lignes, rien -->
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+  </form>
+</div>
+
+<!-- Modal pour ajouter un nouvel aspect -->
+<div class="modal fade" id="addAspectModal" tabindex="-1" aria-labelledby="addAspectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="aspectForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addAspectModalLabel">Add New Aspect</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="aspectName" class="form-label">Aspect Name</label>
+            <input type="text" class="form-control" id="aspectName" name="nom_aspect" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Add Aspect</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
-  
-  <h3>Annotations</h3>
-  {% if annotations %}
-    <ul class="list-group">
-      {% for annotation in annotations %}
-        <li class="list-group-item">
-          <strong>Aspect :</strong> {{ annotation.aspect.nom_aspect }}<br>
-          <strong>Polarité :</strong> {{ annotation.polarite }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Aucune annotation pour ce commentaire.</p>
-  {% endif %}
-  
-  <a href="{% url 'comment_list_admin' %}" class="btn btn-secondary mt-4">Retour à la liste</a>
 </div>
+
+<!-- jQuery et Bootstrap Bundle (incluant Popper) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 (optionnel pour des notifications) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  // Soumission AJAX du formulaire pour ajouter un nouvel aspect
+  $(document).ready(function(){
+    $("#aspectForm").submit(function(e){
+      e.preventDefault();
+      var formData = $(this).serialize();
+      $.ajax({
+        url: "{% url 'aspect_create_ajax' %}",
+        method: "POST",
+        data: formData,
+        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+        success: function(data){
+          if(data.success){
+            // Ajoute la nouvelle option aux sélecteurs de champ aspect dans le formset
+            var newOption = new Option(data.text, data.id, false, true);
+            $(".aspect-select").each(function(){
+              $(this).append(newOption);
+            });
+            $("#addAspectModal").modal('hide');
+            $("#aspectForm")[0].reset();
+            Swal.fire({
+              icon: 'success',
+              title: 'Aspect ajouté',
+              text: 'Le nouvel aspect a été ajouté avec succès.'
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur',
+              text: 'Impossible d’ajouter l’aspect : ' + JSON.stringify(data.errors)
+            });
+          }
+        },
+        error: function(xhr, status, error){
+          Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: 'Une erreur est survenue : ' + error
+          });
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
 {% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+
+{% block title %}Delete Aspect{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2>Delete Aspect</h2>
+  <p>Are you sure you want to delete the aspect <strong>{{ aspect.nom_aspect }}</strong> ?</p>
+  
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{% url 'aspect_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

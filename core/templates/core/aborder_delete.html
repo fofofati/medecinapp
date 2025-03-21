@@ -1,0 +1,23 @@
+{% extends 'core/base_admin.html' %}
+{% load static %}
+{% block title %}Delete Aspect{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-4">Delete Aspect</h2>
+  <p>Are you sure you want to delete the aspect 
+     <strong>{{ aborder.aspect.nom_aspect }}</strong> 
+     with polarity 
+     <strong>{{ aborder.polarite }}</strong>?</p>
+  
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">
+      <i class="bi bi-trash"></i> Yes, Delete
+    </button>
+    <a href="{% url 'comment_analyse' comment.pk %}" class="btn btn-secondary ms-2">
+      Cancel
+    </a>
+  </form>
+</div>
+{% endblock %}

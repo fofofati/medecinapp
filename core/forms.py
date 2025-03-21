@@ -1,9 +1,9 @@
 from django import forms
-from .models import Medecin, Commentaire,Aspect
-
-
-from django import forms
 from .models import Medecin, Commentaire
+from .models import Aborder, POLARITE_CHOICES, Aspect
+from django.forms import ModelForm
+from .models import Aborder
+
 
 class MedecinForm(forms.ModelForm):
     class Meta:
@@ -34,7 +34,7 @@ class CustomLoginForm(forms.Form):
     )
 
 
-    class CustomLoginForm(forms.Form):
+class CustomLoginForm(forms.Form):
      username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': "Username"
@@ -45,12 +45,9 @@ class CustomLoginForm(forms.Form):
     }))
      
 
-
-
 class CustomLoginForm(forms.Form):
     username = forms.CharField(label="Nom d'utilisateur", max_length=150)
     password = forms.CharField(label="Mot de passe", widget=forms.PasswordInput)
-
 
 
 class CommentFileUploadForm(forms.Form):
@@ -69,3 +66,22 @@ class DoctorFileUploadForm(forms.Form):
         })
     )
      
+class AborderForm(forms.ModelForm):
+    class Meta:
+        model = Aborder
+        fields = ['aspect', 'polarite']
+        widgets = {
+            'aspect': forms.Select(attrs={'class': 'form-control aspect-select'}),
+            'polarite': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+class AspectForm(forms.ModelForm):
+    class Meta:
+        model = Aspect
+        fields = ['nom_aspect']
+        widgets = {
+            'nom_aspect': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Nom du nouvel aspect'
+            }),
+        }

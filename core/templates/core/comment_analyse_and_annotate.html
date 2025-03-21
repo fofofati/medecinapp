@@ -1,0 +1,108 @@
+{# core/templates/core/comment_analyse_and_annotate.html #}
+{% extends 'core/base_admin.html' %}
+{% load static %}
+
+{% block title %}Analyse & Annotation - Comment #{{ comment.pk }}{% endblock %}
+
+{% block content %}
+<div class="container my-4 fade-in">
+  <h2 class="mb-4 text-center">Analyse & Annotation - Comment #{{ comment.pk }}</h2>
+  
+  <!-- Bloc : Détails du commentaire -->
+  <div class="card shadow mb-4">
+    <div class="card-header bg-info text-white">
+      Comment Details
+    </div>
+    <div class="card-body">
+      <p><strong>Doctor:</strong> Dr {{ comment.medecin.prenom }} {{ comment.medecin.nom }}</p>
+      <p><strong>Date:</strong> {{ comment.date|date:"d/m/Y" }}</p>
+      <p><strong>Content:</strong> {{ comment.contenu }}</p>
+    </div>
+  </div>
+
+  <!-- Bloc : Aspects déjà associés -->
+  <div class="card shadow mb-4">
+    <div class="card-header bg-dark text-white">
+      Associated Aspects (current)
+    </div>
+    <div class="card-body">
+      {% if aspects_associes %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Aspect</th>
+                <th>Polarity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ab in aspects_associes %}
+              <tr>
+                <td>{{ ab.aspect.nom_aspect }}</td>
+                <td>{{ ab.polarite }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-center">No aspects associated with this comment.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Bloc : Inline Formset pour ajouter/éditer/supprimer -->
+  <div class="card shadow">
+    <div class="card-header bg-secondary text-white">
+      Manually Add/Edit Aspects
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Aspect</th>
+                <th>Polarité</th>
+                <th>Delete ?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for form in formset %}
+              <tr>
+                <td>{{ form.aspect }}</td>
+                <td>{{ form.polarite }}</td>
+                <td>{{ form.DELETE }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary">Save Annotations</button>
+          <a href="#" onclick="history.back();" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Style & Animation -->
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .btn:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+  }
+</style>
+{% endblock %}

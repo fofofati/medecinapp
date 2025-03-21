@@ -1,3 +1,5 @@
+# core/views.py
+
 import csv
 from openpyxl import load_workbook
 from django.shortcuts import render, get_object_or_404, redirect
@@ -5,20 +7,21 @@ from django.contrib import messages
 from django.db.models import Q, Sum, Count, Case, When, IntegerField
 from django.core.paginator import Paginator
 from django.contrib.auth import authenticate, login, logout
+from django.forms import inlineformset_factory
 
 from .models import Medecin, Commentaire, Aspect, Aborder
-from .forms import MedecinForm, CommentaireForm, CustomLoginForm, CommentFileUploadForm, DoctorFileUploadForm
-from core.utils import detect_aspects_and_create_aborder  # Cette fonction doit utiliser ASPECTS_KEYWORDS et normalize_text
+from .forms import MedecinForm, CommentaireForm, CustomLoginForm, CommentFileUploadForm, DoctorFileUploadForm, AborderForm, AspectForm
+from django.forms import inlineformset_factory
+from .forms import AborderForm  
+import json
+from django.http import JsonResponse
 
-# ---------- CRUD Médecin ----------
+
+# ------------------ CRUD Médecin ------------------
 
 def doctor_list(request):
-    """
-    Affiche la liste des médecins avec une barre de recherche (nom, prénom, spécialité)
-    et une pagination (5 médecins par page).
-    """
     search_query = request.GET.get('search', '')
-    doctors_qs = Medecin.objects.all()
+    doctors_qs = Medecin.objects.all().order_by('nom')
     if search_query:
         doctors_qs = doctors_qs.filter(
             Q(nom__icontains=search_query) |
@@ -64,12 +67,9 @@ def doctor_delete(request, pk):
         return redirect('doctor_list')
     return redirect('doctor_list')
 
-# ---------- Gestion des Commentaires ----------
+# ------------------ Gestion des Commentaires ------------------
 
 def doctor_comments(request, pk):
-    """
-    Affiche tous les commentaires d'un médecin, ainsi que des statistiques sur les aspects associés.
-    """
     doctor = get_object_or_404(Medecin, pk=pk)
     comments = Commentaire.objects.filter(medecin=doctor).order_by('-date')
 
@@ -106,9 +106,6 @@ def doctor_comments(request, pk):
     return render(request, 'core/doctor_comments.html', context)
 
 def comment_create_for_doctor(request, pk):
-    """
-    Permet de créer manuellement un commentaire pour un médecin et déclenche l'analyse des aspects.
-    """
     doctor = get_object_or_404(Medecin, pk=pk)
     if request.method == 'POST':
         form = CommentaireForm(request.POST)
@@ -116,17 +113,13 @@ def comment_create_for_doctor(request, pk):
             comment = form.save(commit=False)
             comment.medecin = doctor
             comment.save()
-            # Appel de la fonction d'analyse pour détecter les aspects
-            detect_aspects_and_create_aborder(comment)
+            # Laisser l'administrateur saisir manuellement les aspects ensuite
             return redirect('doctor_comments', pk=doctor.pk)
     else:
         form = CommentaireForm()
     return render(request, 'core/comment_form.html', {'form': form, 'doctor': doctor})
 
 def comment_edit(request, pk):
-    """
-    Permet de modifier un commentaire existant.
-    """
     comment = get_object_or_404(Commentaire, pk=pk)
     if request.method == 'POST':
         form = CommentaireForm(request.POST, instance=comment)
@@ -135,16 +128,9 @@ def comment_edit(request, pk):
             return redirect('doctor_comments', pk=comment.medecin.pk)
     else:
         form = CommentaireForm(instance=comment)
-    return render(request, 'core/comment_form.html', {
-        'form': form, 
-        'doctor': comment.medecin, 
-        'title': 'Edit Comment'
-    })
+    return render(request, 'core/comment_form.html', {'form': form, 'doctor': comment.medecin, 'title': 'Edit Comment'})
 
 def comment_delete(request, pk):
-    """
-    Permet de supprimer un commentaire.
-    """
     comment = get_object_or_404(Commentaire, pk=pk)
     if request.method == 'POST':
         doc_pk = comment.medecin.pk
@@ -152,25 +138,95 @@ def comment_delete(request, pk):
         return redirect('doctor_comments', pk=doc_pk)
     return render(request, 'core/comment_confirm_delete.html', {'comment': comment})
 
-def comment_analyse(request, comment_id):
+# ------------------ CRUD Aspects Manuels (Aborder) ------------------
+
+def annotate_comment(request, comment_id):
     """
-    Affiche l'analyse d'un commentaire : les aspects associés et leur polarité.
+    Affiche la page pour que l'administrateur saisisse manuellement
+    les aspects et leur polarité pour un commentaire via un formset.
     """
     comment = get_object_or_404(Commentaire, pk=comment_id)
-    aspects_associes = comment.aborder_set.select_related('aspect').all()
+    AborderFormSet = inlineformset_factory(
+        Commentaire, Aborder,
+        form=AborderForm,
+        fields=('aspect', 'polarite'),
+        extra=1,
+        can_delete=True
+    )
+    if request.method == 'POST':
+        formset = AborderFormSet(request.POST, instance=comment)
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, "Aspects updated successfully.")
+            return redirect('comment_analyse', comment_id=comment.pk)
+    else:
+        formset = AborderFormSet(instance=comment)
+    context = {
+        'comment': comment,
+        'formset': formset,
+    }
+    return render(request, 'core/annotate_comment.html', context)
+
+def comment_analyse(request, comment_id):
+    """
+    Affiche l'analyse d'un commentaire : liste des aspects associés et leurs polarités.
+    """
+    comment = get_object_or_404(Commentaire, pk=comment_id)
+    aspects_associes = Aborder.objects.select_related('aspect').filter(commentaire=comment)
     context = {
         'comment': comment,
         'aspects_associes': aspects_associes,
     }
     return render(request, 'core/comment_analyse.html', context)
 
-# ---------- Import de Commentaires ----------
+def aborder_add(request, comment_id):
+    """
+    Permet d'ajouter un nouvel aspect (Aborder) à un commentaire via un formulaire.
+    """
+    comment = get_object_or_404(Commentaire, pk=comment_id)
+    if request.method == 'POST':
+        form = AborderForm(request.POST)
+        if form.is_valid():
+            aborder = form.save(commit=False)
+            aborder.commentaire = comment
+            aborder.save()
+            messages.success(request, "Aspect added successfully.")
+            return redirect('comment_analyse', comment_id=comment.pk)
+    else:
+        form = AborderForm()
+    return render(request, 'core/aborder_add.html', {'form': form, 'comment': comment})
+
+def aborder_edit(request, aborder_id):
+    """
+    Permet d'éditer un aspect existant.
+    """
+    aborder = get_object_or_404(Aborder, pk=aborder_id)
+    comment = aborder.commentaire
+    if request.method == 'POST':
+        form = AborderForm(request.POST, instance=aborder)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Aspect updated successfully.")
+            return redirect('comment_analyse', comment_id=comment.pk)
+    else:
+        form = AborderForm(instance=aborder)
+    return render(request, 'core/aborder_edit.html', {'form': form, 'aborder': aborder, 'comment': comment})
+
+def aborder_delete(request, aborder_id):
+    """
+    Permet de supprimer un aspect (Aborder) après confirmation.
+    """
+    aborder = get_object_or_404(Aborder, pk=aborder_id)
+    comment = aborder.commentaire
+    if request.method == 'POST':
+        aborder.delete()
+        messages.success(request, "Aspect deleted successfully.")
+        return redirect('comment_analyse', comment_id=comment.pk)
+    return render(request, 'core/aborder_delete.html', {'aborder': aborder, 'comment': comment})
+
+# ------------------ Import de Commentaires ------------------
 
 def comment_import_for_doctor(request, pk):
-    """
-    Permet d'importer des commentaires pour un médecin à partir d'un fichier CSV ou Excel.
-    Le fichier doit contenir une colonne 'contenu'.
-    """
     doctor = get_object_or_404(Medecin, pk=pk)
     if request.method == 'POST':
         form = CommentFileUploadForm(request.POST, request.FILES)
@@ -191,21 +247,16 @@ def comment_import_for_doctor(request, pk):
     return render(request, 'core/comment_import.html', {'form': form, 'doctor': doctor})
 
 def handle_csv_comments(uploaded_file, doctor):
-    """
-    Lit le CSV et crée des commentaires. La colonne 'contenu' doit être présente.
-    """
     data = uploaded_file.read().decode('utf-8').splitlines()
     reader = csv.DictReader(data)
     for row in reader:
         contenu = row.get('contenu', '')
         if contenu.strip():
             comment = Commentaire.objects.create(medecin=doctor, contenu=contenu)
-            detect_aspects_and_create_aborder(comment)
+            # Ici, vous ne déclenchez pas l'analyse automatique
+            # L'administrateur saisira manuellement les aspects
 
 def handle_excel_comments(uploaded_file, doctor):
-    """
-    Lit un fichier Excel (.xlsx) et crée des commentaires. La première ligne doit contenir 'contenu'.
-    """
     wb = load_workbook(uploaded_file)
     sheet = wb.active
     headers = [cell.value.lower().strip() if cell.value else '' for cell in sheet[1]]
@@ -216,15 +267,11 @@ def handle_excel_comments(uploaded_file, doctor):
         contenu = row[contenu_index - 1]
         if contenu and isinstance(contenu, str) and contenu.strip():
             comment = Commentaire.objects.create(medecin=doctor, contenu=contenu)
-            detect_aspects_and_create_aborder(comment)
+            # Pas d'analyse automatique
 
-# ---------- Import de Médecins ----------
+# ------------------ Import de Médecins ------------------
 
 def import_doctors(request):
-    """
-    Permet d'importer des médecins à partir d'un fichier CSV ou Excel.
-    Le fichier doit contenir les colonnes : nom, prenom, specialite, email, telephone.
-    """
     if request.method == 'POST':
         form = DoctorFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -270,12 +317,8 @@ def import_doctors(request):
         form = DoctorFileUploadForm()
     return render(request, 'core/doctor_import.html', {'form': form})
 
-# Exemple de vue doctor_list pour afficher les médecins
-def doctor_list(request):
-    doctors = Medecin.objects.all()
-    return render(request, 'core/doctor_list.html', {'doctors': doctors})
+# ------------------ Sélection d'un médecin pour voir ses commentaires ------------------
 
-# ---------- Sélection d'un médecin pour voir ses commentaires ----------
 def select_doctor_for_comments(request):
     search_query = request.GET.get('search', '')
     if search_query:
@@ -288,10 +331,9 @@ def select_doctor_for_comments(request):
     }
     return render(request, 'core/comment_list_doctors.html', context)
 
-# ---------- Authentification ----------
+# ------------------ Authentification ------------------
+
 def login_custom(request):
-    # if request.user.is_authenticated:
-    #     return redirect('dashboard')
     error_message = None
     if request.method == 'POST':
         form = CustomLoginForm(request.POST)
@@ -307,6 +349,7 @@ def login_custom(request):
     else:
         form = CustomLoginForm()
     return render(request, 'core/login.html', {'form': form, 'error_message': error_message})
+
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -319,3 +362,52 @@ def dashboard(request):
         'total_comments': total_comments,
     }
     return render(request, 'core/dashboard.html', context)
+
+
+def annotate_comment(request, comment_id):
+    comment = get_object_or_404(Commentaire, pk=comment_id)
+
+    AborderFormSet = inlineformset_factory(
+        Commentaire,
+        Aborder,
+        form=AborderForm,             # <-- IMPORTANT
+        fields=('aspect', 'polarite'),
+        extra=3,                      # 3 lignes vierges par défaut
+        can_delete=True
+    )
+
+    if request.method == 'POST':
+        formset = AborderFormSet(request.POST, instance=comment)
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, "Aspects mis à jour avec succès.")
+            return redirect('comment_analyse', comment_id=comment.pk)
+    else:
+        formset = AborderFormSet(instance=comment)
+
+    # Pour afficher la liste déjà associée
+    aspects_associes = Aborder.objects.filter(commentaire=comment)
+
+    context = {
+        'comment': comment,
+        'formset': formset,
+        'aspects_associes': aspects_associes,
+    }
+    return render(request, 'core/annotate_comment.html', context)
+def doctor_list(request):
+    doctors = Medecin.objects.all()
+    return render(request, 'core/doctor_list.html', {'doctors': doctors})
+
+def aspect_create_ajax(request):
+    """
+    Crée un nouvel aspect à partir d'une requête AJAX.
+    Renvoie en JSON l'ID et le nom de l'aspect créé.
+    """
+    if request.method == 'POST' and request.is_ajax():
+        form = AspectForm(request.POST)
+        if form.is_valid():
+            aspect = form.save()
+            return JsonResponse({'success': True, 'id': aspect.id, 'text': aspect.nom_aspect})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+    return JsonResponse({'success': False, 'error': 'Requête invalide'})

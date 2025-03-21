@@ -3,18 +3,43 @@
 {% block title %}Import Comments{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Import Comments for Dr {{ doctor.prenom }} {{ doctor.nom }}</h2>
-  <p>Upload an Excel (.xlsx) or CSV file containing a column named "contenu".</p>
-  <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">
-      <i class="bi bi-upload"></i> Import Comments
-    </button>
-    <a href="{% url 'doctor_comments' doctor.pk %}" class="btn btn-secondary ms-2">
-      <i class="bi bi-arrow-left"></i> Cancel
-    </a>
-  </form>
+<div class="container my-5 fade-in">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h2 class="card-title mb-0">Import Comments for Dr {{ doctor.prenom }} {{ doctor.nom }}</h2>
+    </div>
+    <div class="card-body">
+      <p class="card-text">
+        Please upload an Excel (.xlsx) or CSV file containing a column named <strong>"contenu"</strong>.
+      </p>
+      <form method="POST" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        <div class="col-12">
+          {{ form.as_p }}
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-upload"></i> Import Comments
+          </button>
+        </div>
+        <div class="col-auto">
+          <a href="{% url 'doctor_comments' doctor.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
+<!-- Styles pour l'animation -->
+<style>
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
 {% endblock %}
