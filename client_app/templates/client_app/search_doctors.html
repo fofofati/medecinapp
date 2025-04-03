@@ -1,70 +1,122 @@
 {% extends 'client_app/base_public.html' %}
 {% load static %}
 
-{% block title %}Recherche Médecins{% endblock %}
-
 {% block content %}
-<div class="container my-5">
-  <h2 class="text-center mb-4">Trouvez votre Médecin</h2>
-  
-  <form method="GET" action="{% url 'search_doctors' %}" class="row g-3 mb-4">
-    <!-- Select pour la spécialité -->
-    <div class="col-md-4">
-      <select name="specialite_query" class="form-select">
-        <option value="">Toutes les spécialités</option>
-        {% for sp in all_specialties %}
-          <option value="{{ sp }}"
-            {% if sp == specialite_query %}
-              selected
-            {% endif %}
-          >{{ sp }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <!-- Select pour l'aspect -->
-    <div class="col-md-4">
-      <select name="aspect_query" class="form-select">
-        <option value="">Tous les aspects</option>
-        {% for asp in all_aspects %}
-          <option value="{{ asp }}"
-            {% if asp == aspect_query %}
-              selected
-            {% endif %}
-          >{{ asp }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-4">
-      <button type="submit" class="btn btn-primary w-100">Rechercher</button>
-    </div>
-  </form>
+<!-- Importer le CSS et l’animation -->
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-  <!-- Affichage des médecins -->
-  <div class="row">
-    {% for doctor in doctors %}
-    <div class="col-md-4 mb-4">
-      <div class="card h-100">
-        <img 
-          src="{% static 'images/doctor-placeholder.jpg' %}" 
-          class="card-img-top" 
-          alt="Photo de Dr {{ doctor.nom }}"
-        >
-        <div class="card-body">
-          <h5 class="card-title">Dr {{ doctor.prenom }} {{ doctor.nom }}</h5>
-          <p class="card-text">
-            <strong>Spécialité :</strong> {{ doctor.specialite }}<br>
-            <strong>Email :</strong> {{ doctor.email }}<br>
-            <strong>Téléphone :</strong> {{ doctor.telephone }}
-          </p>
-          <a href="#" class="btn btn-success">Prendre Rendez-vous</a>
+<!-- Arrière-plan dynamique -->
+<div id="dynamic-background"></div>
+<div class="overlay"></div>
+
+
+<div class="container py-4">
+    <!-- En-tête -->
+    <div class="text-center mb-5 text-white">
+        <h1 class="display-5 fw-bold mb-3">Trouvez votre médecin</h1>
+        <p class="lead">Recherchez par spécialité et critères qualitatifs</p>
+    </div>
+
+    <!-- Formulaire de recherche -->
+    <div class="card shadow-lg border-0 mb-5">
+        <div class="card-body p-4">
+            <form method="get" action="{% url 'search_doctors' %}">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="specialite_query" class="form-label fw-bold">Spécialité</label>
+                        <select class="form-select" id="specialite_query" name="specialite_query">
+                            <option value="">Toutes spécialités</option>
+                            {% for specialite in all_specialties %}
+                                <option value="{{ specialite }}" {% if specialite == specialite_query %}selected{% endif %}>
+                                    {{ specialite }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="aspect_query" class="form-label fw-bold">Critère principal</label>
+                        <select class="form-select" id="aspect_query" name="aspect_query">
+                            <option value="">Tous critères</option>
+                            {% for aspect in all_aspects %}
+                                <option value="{{ aspect }}" {% if aspect == aspect_query %}selected{% endif %}>
+                                    {{ aspect }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="fas fa-search me-2"></i>Rechercher
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
-      </div>
     </div>
-    {% empty %}
-    <div class="col-12">
-      <p class="text-center">Aucun médecin trouvé.</p>
+
+    <!-- Résultats -->
+    {% if doctors %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for doctor in doctors %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
+                <div class="card-body">
+                    <h5 class="card-title mb-1">Dr. {{ doctor.nom }}</h5>
+                    <span class="badge bg-primary mb-3">{{ doctor.specialite }}</span>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <i class="fas fa-map-marker-alt text-muted"></i>
+                            <span class="ms-1 small">Casablanca</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-  </div>
+    {% else %}
+    <div class="text-center py-5">
+        <img src="{% static 'images/no-results.svg' %}" alt="Aucun résultat" class="img-fluid mb-4" style="max-height: 150px;">
+        <h4 class="text-muted mb-3">Aucun médecin trouvé</h4>
+        <a href="{% url 'search_doctors' %}" class="btn btn-primary">
+            <i class="fas fa-sync-alt me-2"></i>Réinitialiser
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if doctors.has_other_pages %}
+    <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if doctors.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="Première">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in doctors.paginator.page_range %}
+                {% if doctors.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if doctors.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ doctors.paginator.num_pages }}" aria-label="Dernière">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
+
+<!-- Importer le JS -->
+<script src="{% static 'js/background.js' %}"></script>
 {% endblock %}

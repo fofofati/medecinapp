@@ -74,6 +74,16 @@ class AborderForm(forms.ModelForm):
             'aspect': forms.Select(attrs={'class': 'form-control aspect-select'}),
             'polarite': forms.Select(attrs={'class': 'form-control'}),
         }
+    def clean(self):
+        cleaned_data = super().clean()
+        aspect = cleaned_data.get('aspect')
+        polarite = cleaned_data.get('polarite')
+
+        # Vérifie si cet aspect existe déjà, indépendamment de la polarité
+        if Aborder.objects.filter(aspect=aspect).exists():
+            raise forms.ValidationError(f"L'aspect '{aspect}' a déjà été sélectionné et ne peut pas être ajouté à nouveau.")
+
+        return cleaned_data 
 
 class AspectForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,195 @@
+{% extends 'client_app/base_public.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">À propos de RecDoc</h1>
+        <p class="lead">Votre plateforme de recherche médicale intelligente</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4"><i class="fas fa-search me-2 text-primary"></i>Notre Mission</h3>
+                    <p class="card-text">
+                        Simplifier la recherche de professionnels de santé en vous permettant de filtrer par spécialité et critères qualitatifs. Trouvez rapidement le professionnel qu'il vous faut.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4"><i class="fas fa-user-md me-2 text-primary"></i>Pour les Patients</h3>
+                    <p class="card-text">
+                        Trouvez le médecin correspondant à vos besoins spécifiques en quelques clics. Notre plateforme est conçue pour vous offrir la meilleure expérience possible.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optionnel : Ajouter une section "Nos Valeurs" -->
+    <div class="bg-light p-5 rounded-3 mb-5">
+        <h2 class="text-center mb-4">Nos Valeurs</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center p-3">
+                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-heart fa-lg"></i>
+                    </div>
+                    <h5>Engagement</h5>
+                    <p>Nous nous engageons à fournir des services de qualité pour le bien-être de nos utilisateurs.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3">
+                    <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-users fa-lg"></i>
+                    </div>
+                    <h5>Communauté</h5>
+                    <p>Nous mettons en avant une communauté de médecins qualifiés et expérimentés pour garantir vos soins.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3">
+                    <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-shield-alt fa-lg"></i>
+                    </div>
+                    <h5>Sécurité</h5>
+                    <p>La sécurité de vos informations personnelles est notre priorité absolue.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-light p-5 rounded-3 mb-5">
+        <h2 class="text-center mb-4">Comment ça marche ?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center p-3">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-search fa-lg"></i>
+                    </div>
+                    <h5>1. Recherchez</h5>
+                    <p>Filtrez par spécialité et critères</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-list fa-lg"></i>
+                    </div>
+                    <h5>2. Comparez</h5>
+                    <p>Parcourez les profils détaillés</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                    <h5>3. Choisissez</h5>
+                    <p>Sélectionnez votre professionnel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles spécifiques à cette page -->
+<style>
+    .card-body {
+        padding: 24px;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .bg-light {
+        background-color: #22374b !important;
+    }
+
+    .p-5 {
+        padding: 3rem !important;
+    }
+
+    .rounded-3 {
+        border-radius: 1rem !important;
+    }
+
+    .text-primary {
+        color: #70a9e7 !important;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .card-text {
+        font-size: 1.1rem;
+    }
+
+    .bg-primary {
+        background-color: #007bff !important;
+    }
+
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-info {
+        background-color: #17a2b8 !important;
+    }
+
+    .rounded-circle {
+        border-radius: 50% !important;
+    }
+
+    .d-inline-flex {
+        display: inline-flex !important;
+    }
+
+    .align-items-center {
+        align-items: center !important;
+    }
+
+    .justify-content-center {
+        justify-content: center !important;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem !important;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    .mb-5 {
+        margin-bottom: 3rem !important;
+    }
+
+    .fa-lg {
+        font-size: 1.25rem !important;
+    }
+
+    .fa-search, .fa-list, .fa-check-circle, .fa-heart, .fa-users, .fa-shield-alt {
+        font-size: 1.75rem;
+    }
+
+    .lead {
+        font-size: 1.25rem;
+        font-weight: 300;
+    }
+</style>
+
+{% endblock %}

@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     # On inclut les URLs définies dans core/urls.py
-    path('', include('core.urls')), 
+    path('core/', include('core.urls')), 
   
      path('', include('client_app.urls')), 
 ]

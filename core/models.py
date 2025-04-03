@@ -36,6 +36,10 @@ class Aborder(models.Model):
     commentaire = models.ForeignKey(Commentaire, on_delete=models.CASCADE)
     aspect = models.ForeignKey(Aspect, on_delete=models.CASCADE)
     polarite = models.CharField(max_length=50, choices=POLARITE_CHOICES, blank=True)
+    
+    
+    class Meta:
+        unique_together = ('aspect',) 
 
     def __str__(self):
         return f"{self.commentaire} / {self.aspect} ({self.polarite})"
