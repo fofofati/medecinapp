@@ -1,5 +1,3 @@
-# core/views.py
-
 import csv
 from openpyxl import load_workbook
 from django.shortcuts import render, get_object_or_404, redirect
@@ -15,6 +13,8 @@ from django.forms import inlineformset_factory
 from .forms import AborderForm  
 import json
 from django.http import JsonResponse
+from .models import Medecin, Quartier
+from django.core.exceptions import ValidationError
 
 
 # ------------------ CRUD Médecin ------------------
@@ -26,7 +26,9 @@ def doctor_list(request):
         doctors_qs = doctors_qs.filter(
             Q(nom__icontains=search_query) |
             Q(prenom__icontains=search_query) |
-            Q(specialite__icontains=search_query)
+            Q(specialite__icontains=search_query) |
+            Q(quartier__nom__icontains=search_query) |
+            Q(quartier__ville__icontains=search_query)
         )
     paginator = Paginator(doctors_qs, 5)
     page_number = request.GET.get('page')
@@ -36,6 +38,7 @@ def doctor_list(request):
         'search_query': search_query,
     }
     return render(request, 'core/doctor_list.html', context)
+
 
 def doctor_create(request):
     if request.method == 'POST':
@@ -182,19 +185,23 @@ def comment_analyse(request, comment_id):
 def aborder_add(request, comment_id):
     """
     Permet d'ajouter un nouvel aspect (Aborder) à un commentaire via un formulaire.
+    Empêche les doublons d'aspect pour un même commentaire.
     """
     comment = get_object_or_404(Commentaire, pk=comment_id)
+    
     if request.method == 'POST':
-        form = AborderForm(request.POST)
+        form = AborderForm(request.POST, commentaire=comment)
         if form.is_valid():
             aborder = form.save(commit=False)
             aborder.commentaire = comment
             aborder.save()
-            messages.success(request, "Aspect added successfully.")
+            messages.success(request, "Aspect ajouté avec succès.")
             return redirect('comment_analyse', comment_id=comment.pk)
     else:
-        form = AborderForm()
+        form = AborderForm(commentaire=comment)
+
     return render(request, 'core/aborder_add.html', {'form': form, 'comment': comment})
+
 
 def aborder_edit(request, aborder_id):
     """
@@ -271,51 +278,134 @@ def handle_excel_comments(uploaded_file, doctor):
 
 # ------------------ Import de Médecins ------------------
 
+from django.contrib import messages
+from django.shortcuts import render, redirect
+import csv
+from openpyxl import load_workbook
+from .forms import DoctorFileUploadForm
+from .models import Medecin, Quartier
+
 def import_doctors(request):
     if request.method == 'POST':
         form = DoctorFileUploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES['file']
             filename = uploaded_file.name.lower()
+
+            REQUIRED_COLUMNS = ['nom', 'prenom', 'specialite', 'email', 'telephone', 'nom_quartier', 'ville_quartier']
+
+            # Fonction utilitaire pour convertir proprement en string
+            def safe_str(value):
+                return str(value).strip() if value is not None else ''
+
+            # Fonction pour récupérer ou créer un quartier
+            def get_or_create_quartier(nom_quartier, ville_quartier):
+                if nom_quartier and ville_quartier:
+                    return Quartier.objects.get_or_create(
+                        nom=safe_str(nom_quartier),
+                        ville=safe_str(ville_quartier)
+                    )[0]
+                return None
+
+            doctors_added = 0
+            doctors_skipped = 0
+
+            # Traitement CSV
             if filename.endswith('.csv'):
                 data = uploaded_file.read().decode('utf-8').splitlines()
                 reader = csv.DictReader(data)
+                csv_columns = [col.lower().strip() for col in reader.fieldnames]
+
+                missing_columns = [col for col in REQUIRED_COLUMNS if col not in csv_columns]
+                if missing_columns:
+                    form.add_error('file', f"Colonnes manquantes dans le fichier CSV : {', '.join(missing_columns)}")
+                    return render(request, 'core/doctor_import.html', {'form': form})
+
                 for row in reader:
-                    Medecin.objects.create(
-                        nom=row.get('nom', '').strip(),
-                        prenom=row.get('prenom', '').strip(),
-                        specialite=row.get('specialite', '').strip(),
-                        email=row.get('email', '').strip(),
-                        telephone=row.get('telephone', '').strip()
-                    )
+                    quartier = get_or_create_quartier(row['nom_quartier'], row['ville_quartier'])
+
+                    nom = safe_str(row['nom'])
+                    prenom = safe_str(row['prenom'])
+                    email = safe_str(row['email'])
+
+                    medecin_exists = Medecin.objects.filter(
+                        nom=nom,
+                        prenom=prenom,
+                        email=email
+                    ).exists()
+
+                    if not medecin_exists:
+                        Medecin.objects.create(
+                            nom=nom,
+                            prenom=prenom,
+                            specialite=safe_str(row['specialite']),
+                            email=email,
+                            telephone=safe_str(row['telephone']),
+                            quartier=quartier
+                        )
+                        doctors_added += 1
+                    else:
+                        doctors_skipped += 1
+
+            # Traitement Excel
             elif filename.endswith('.xlsx'):
                 wb = load_workbook(uploaded_file)
                 sheet = wb.active
-                headers = [cell.value.lower().strip() if cell.value else '' for cell in sheet[1]]
-                try:
-                    idx_nom = headers.index('nom') + 1
-                    idx_prenom = headers.index('prenom') + 1
-                    idx_specialite = headers.index('specialite') + 1
-                    idx_email = headers.index('email') + 1
-                    idx_telephone = headers.index('telephone') + 1
-                except ValueError as e:
-                    form.add_error('file', f"Colonne manquante: {e}")
+                headers = [safe_str(cell.value).lower() for cell in sheet[1]]
+
+                missing_columns = [col for col in REQUIRED_COLUMNS if col not in headers]
+                if missing_columns:
+                    form.add_error('file', f"Colonnes manquantes dans le fichier Excel : {', '.join(missing_columns)}")
                     return render(request, 'core/doctor_import.html', {'form': form})
+
+                # Obtenir les index des colonnes
+                index_map = {col: headers.index(col) for col in REQUIRED_COLUMNS}
+
                 for row in sheet.iter_rows(min_row=2, values_only=True):
-                    Medecin.objects.create(
-                        nom=row[idx_nom - 1] if row[idx_nom - 1] else '',
-                        prenom=row[idx_prenom - 1] if row[idx_prenom - 1] else '',
-                        specialite=row[idx_specialite - 1] if row[idx_specialite - 1] else '',
-                        email=row[idx_email - 1] if row[idx_email - 1] else '',
-                        telephone=row[idx_telephone - 1] if row[idx_telephone - 1] else ''
-                    )
+                    nom = safe_str(row[index_map['nom']])
+                    prenom = safe_str(row[index_map['prenom']])
+                    email = safe_str(row[index_map['email']])
+                    specialite = safe_str(row[index_map['specialite']])
+                    telephone = safe_str(row[index_map['telephone']])
+                    quartier_nom = safe_str(row[index_map['nom_quartier']])
+                    quartier_ville = safe_str(row[index_map['ville_quartier']])
+                    quartier = get_or_create_quartier(quartier_nom, quartier_ville)
+
+                    medecin_exists = Medecin.objects.filter(
+                        nom=nom,
+                        prenom=prenom,
+                        email=email
+                    ).exists()
+
+                    if not medecin_exists:
+                        Medecin.objects.create(
+                            nom=nom,
+                            prenom=prenom,
+                            specialite=specialite,
+                            email=email,
+                            telephone=telephone,
+                            quartier=quartier
+                        )
+                        doctors_added += 1
+                    else:
+                        doctors_skipped += 1
+
             else:
                 form.add_error('file', "Le fichier doit être au format CSV ou Excel (.xlsx).")
                 return render(request, 'core/doctor_import.html', {'form': form})
+
+            # Messages finaux
+            messages.success(request, f"{doctors_added} médecins ont été ajoutés avec succès.")
+            if doctors_skipped > 0:
+                messages.info(request, f"{doctors_skipped} médecins ont été ignorés car ils existaient déjà.")
+
             return redirect('doctor_list')
+
     else:
         form = DoctorFileUploadForm()
+
     return render(request, 'core/doctor_import.html', {'form': form})
+
 
 # ------------------ Sélection d'un médecin pour voir ses commentaires ------------------
 
@@ -363,7 +453,6 @@ def dashboard(request):
     }
     return render(request, 'core/dashboard.html', context)
 
-
 def annotate_comment(request, comment_id):
     comment = get_object_or_404(Commentaire, pk=comment_id)
 
@@ -394,6 +483,7 @@ def annotate_comment(request, comment_id):
         'aspects_associes': aspects_associes,
     }
     return render(request, 'core/annotate_comment.html', context)
+
 def doctor_list(request):
     doctors = Medecin.objects.all()
     return render(request, 'core/doctor_list.html', {'doctors': doctors})

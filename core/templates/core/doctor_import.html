@@ -10,9 +10,13 @@
     </div>
     <div class="card-body">
       <p class="card-text">
-        Chargez un fichier CSV ou Excel (.xlsx) contenant les colonnes : <strong>nom</strong>, <strong>prenom</strong>, <strong>specialite</strong>, <strong>email</strong>, <strong>telephone</strong>.
+        Chargez un fichier CSV ou Excel (.xlsx) contenant les colonnes :
+        <strong>nom</strong>, <strong>prenom</strong>, <strong>specialite</strong>,
+        <strong>email</strong>, <strong>telephone</strong>,
+        <strong>quartier_nom</strong>, <strong>quartier_ville</strong>.
       </p>
       <form method="POST" enctype="multipart/form-data" class="row g-3">
+      
         {% csrf_token %}
         <div class="col-12">
           {{ form.as_p }}

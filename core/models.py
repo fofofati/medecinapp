@@ -1,14 +1,23 @@
 from django.db import models
 
+class Quartier(models.Model):
+    nom = models.CharField(max_length=100)
+    ville = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.nom} ({self.ville})"
+
 class Medecin(models.Model):
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100, blank=True)
     specialite = models.CharField(max_length=100)
     email = models.EmailField(blank=True)
     telephone = models.CharField(max_length=20, blank=True)
+    quartier = models.ForeignKey(Quartier, on_delete=models.SET_NULL, null=True, blank=True, related_name='medecins')
 
     def __str__(self):
         return f"Dr {self.prenom} {self.nom}"
+
 
 class Commentaire(models.Model):
     medecin = models.ForeignKey(Medecin, on_delete=models.CASCADE, related_name='commentaires')
@@ -39,8 +48,7 @@ class Aborder(models.Model):
     
     
     class Meta:
-        unique_together = ('aspect',) 
-
+        unique_together = ('commentaire', 'aspect')
     def __str__(self):
         return f"{self.commentaire} / {self.aspect} ({self.polarite})"
     

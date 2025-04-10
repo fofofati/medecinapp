@@ -76,6 +76,9 @@
               <th>Spécialité</th>
               <th>Email</th>
               <th>Téléphone</th>
+              <th> nom de Quartier</th>
+              <th> ville</th>
+
               <th class="text-center">Actions</th>
             </tr>
           </thead>
@@ -87,6 +90,10 @@
               <td>{{ doctor.specialite }}</td>
               <td>{{ doctor.email }}</td>
               <td>{{ doctor.telephone }}</td>
+              <td>{% if doctor.quartier %}{{ doctor.quartier.nom }}{% endif %}</td>
+              <td>{% if doctor.quartier %}{{ doctor.quartier.ville }}{% endif %}</td>
+
+              
               <td class="text-center">
                 <!-- Bouton Edit -->
                 <a href="{% url 'doctor_edit' doctor.pk %}" class="btn btn-primary btn-sm me-1">
@@ -115,7 +122,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" class="text-center py-4">
+              <td colspan="8" class="text-center py-4">
                 <i class="bi bi-info-circle fs-4 text-secondary"></i>
                 <p class="mb-0">No doctors found.</p>
               </td>
